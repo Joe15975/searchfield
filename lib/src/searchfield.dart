@@ -266,6 +266,9 @@ class SearchField<T> extends StatefulWidget {
   /// text capitalization defaults to [TextCapitalization.none]
   final TextCapitalization textCapitalization;
 
+  /// specify auto validate mode
+  final AutovalidateMode? autovalidateMode;
+
   SearchField(
       {Key? key,
       required this.suggestions,
@@ -298,6 +301,7 @@ class SearchField<T> extends StatefulWidget {
       this.textCapitalization = TextCapitalization.none,
       this.textInputAction,
       this.validator,
+      this.autovalidateMode,
       @Deprecated('use `onSearchTextChanged` instead.') this.comparator})
       : assert(
             (initialValue != null &&
@@ -630,6 +634,7 @@ class _SearchFieldState<T> extends State<SearchField<T>> {
         controller: widget.controller ?? searchController,
         focusNode: _focus,
         validator: widget.validator,
+        autovalidateMode: widget.autovalidateMode,
         style: widget.searchStyle,
         textInputAction: widget.textInputAction,
         textCapitalization: widget.textCapitalization,
