@@ -269,12 +269,6 @@ class SearchField<T> extends StatefulWidget {
   /// specify auto validate mode
   final AutovalidateMode? autovalidateMode;
 
-  /// drop down menu animation duration defaults to `Duration(milliseconds: 0)` (No animation)
-  final Duration? dropDownDuration;
-
-  /// drop down menu animation curve defaults to [Curves.easeOut]
-  final Curve? dropdownAnimationCurve;
-
   SearchField(
       {Key? key,
       required this.suggestions,
@@ -308,8 +302,6 @@ class SearchField<T> extends StatefulWidget {
       this.textInputAction,
       this.validator,
       this.autovalidateMode,
-      this.dropdownAnimationCurve = Curves.easeOut,
-      this.dropDownDuration = const Duration(milliseconds: 0),
       @Deprecated('use `onSearchTextChanged` instead.') this.comparator})
       : assert(
             (initialValue != null &&
@@ -436,74 +428,70 @@ class _SearchFieldState<T> extends State<SearchField<T>> {
           }
           final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
-          final Widget listView = AnimatedContainer(
-            duration: widget.dropDownDuration!,
-            curve: widget.dropdownAnimationCurve!,
-            child: ListView.builder(
-              reverse: widget.suggestionDirection == SuggestionDirection.up,
-              padding: EdgeInsets.zero,
-              controller: _scrollController,
-              itemCount: snapshot.data!.length,
-              physics: snapshot.data!.length == 1
-                  ? NeverScrollableScrollPhysics()
-                  : ScrollPhysics(),
-              itemBuilder: (context, index) => TextFieldTapRegion(
-                  child: InkWell(
-                onTap: () {
-                  searchController!.text = snapshot.data![index]!.searchKey;
-                  searchController!.selection = TextSelection.fromPosition(
-                    TextPosition(
-                      offset: searchController!.text.length,
-                    ),
-                  );
+          final Widget listView = ListView.builder(
+            reverse: widget.suggestionDirection == SuggestionDirection.up,
+            padding: EdgeInsets.zero,
+            controller: _scrollController,
+            itemCount: snapshot.data!.length,
+            physics: snapshot.data!.length == 1
+                ? NeverScrollableScrollPhysics()
+                : ScrollPhysics(),
+            itemBuilder: (context, index) => TextFieldTapRegion(
+                child: InkWell(
+              onTap: () {
+                searchController!.text = snapshot.data![index]!.searchKey;
+                searchController!.selection = TextSelection.fromPosition(
+                  TextPosition(
+                    offset: searchController!.text.length,
+                  ),
+                );
 
-                  // suggestion action to switch focus to next focus node
-                  if (widget.suggestionAction != null) {
-                    if (widget.suggestionAction == SuggestionAction.next) {
-                      _focus!.nextFocus();
-                    } else if (widget.suggestionAction ==
-                        SuggestionAction.unfocus) {
-                      _focus!.unfocus();
-                    }
+                // suggestion action to switch focus to next focus node
+                if (widget.suggestionAction != null) {
+                  if (widget.suggestionAction == SuggestionAction.next) {
+                    _focus!.nextFocus();
+                  } else if (widget.suggestionAction ==
+                      SuggestionAction.unfocus) {
+                    _focus!.unfocus();
                   }
+                }
 
-                  // hide the suggestions
-                  suggestionStream.sink.add(null);
-                  if (widget.onSuggestionTap != null) {
-                    widget.onSuggestionTap!(snapshot.data![index]!);
-                  }
-                },
-                child: Container(
-                  height: widget.itemHeight,
-                  width: double.infinity,
-                  alignment: Alignment.centerLeft,
-                  decoration: widget.suggestionItemDecoration?.copyWith(
-                        border: widget.suggestionItemDecoration?.border ??
-                            Border(
+                // hide the suggestions
+                suggestionStream.sink.add(null);
+                if (widget.onSuggestionTap != null) {
+                  widget.onSuggestionTap!(snapshot.data![index]!);
+                }
+              },
+              child: Container(
+                height: widget.itemHeight,
+                width: double.infinity,
+                alignment: Alignment.centerLeft,
+                decoration: widget.suggestionItemDecoration?.copyWith(
+                      border: widget.suggestionItemDecoration?.border ??
+                          Border(
+                            bottom: BorderSide(
+                              color: widget.marginColor ??
+                                  onSurfaceColor.withOpacity(0.1),
+                            ),
+                          ),
+                    ) ??
+                    BoxDecoration(
+                      border: index == snapshot.data!.length - 1
+                          ? null
+                          : Border(
                               bottom: BorderSide(
                                 color: widget.marginColor ??
                                     onSurfaceColor.withOpacity(0.1),
                               ),
                             ),
-                      ) ??
-                      BoxDecoration(
-                        border: index == snapshot.data!.length - 1
-                            ? null
-                            : Border(
-                                bottom: BorderSide(
-                                  color: widget.marginColor ??
-                                      onSurfaceColor.withOpacity(0.1),
-                                ),
-                              ),
-                      ),
-                  child: snapshot.data![index]!.child ??
-                      Text(
-                        snapshot.data![index]!.searchKey,
-                        style: widget.suggestionStyle,
-                      ),
-                ),
-              )),
-            ),
+                    ),
+                child: snapshot.data![index]!.child ??
+                    Text(
+                      snapshot.data![index]!.searchKey,
+                      style: widget.suggestionStyle,
+                    ),
+              ),
+            )),
           );
 
           return AnimatedContainer(
@@ -602,10 +590,7 @@ class _SearchFieldState<T> extends State<SearchField<T>> {
                 child: CompositedTransformFollower(
                     offset: widget.offset ?? yOffset,
                     link: _layerLink,
-                    child: Material(
-                        child: _suggestionsBuilder()
-                    )
-                ),
+                    child: Material(child: _suggestionsBuilder())),
               );
             }));
   }
